@@ -1,0 +1,13 @@
+# Package Information for pkg-config
+
+prefix=/usr
+exec_prefix=/usr
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libduktape
+Description: libduktape
+Version: 2.20.0
+Libs: -L${libdir} -lduktape
+Libs.private: 
+Cflags: -I${includedir}

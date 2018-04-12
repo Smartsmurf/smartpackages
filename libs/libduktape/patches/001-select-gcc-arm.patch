@@ -1,0 +1,15 @@
+--- a/Makefile
++++ b/Makefile
+@@ -100,9 +100,9 @@
+ 	tests/ecmascript/test-regexp-ipv6-regexp.js
+ 
+ # Compiler setup for Linux.
+-CC	= gcc
+-GXX	= g++
++CC	= arm-openwrt-linux-muslgnueabi-gcc
++GXX	= arm-openwrt-linux-muslgnueabi-g++
+ 
+ CCOPTS_SHARED =
+ CCOPTS_SHARED += -DDUK_CMDLINE_PRINTALERT_SUPPORT
+ CCOPTS_SHARED += -DDUK_CMDLINE_CONSOLE_SUPPORT
+
