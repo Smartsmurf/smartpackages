@@ -58,9 +58,9 @@ endef
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include
-	$(CP) $(PKG_BUILD_DIR)/prep/nondebug/duktape.h $(1)/usr/include/
+	$(CP) $(PKG_BUILD_DIR)/prep/nondebug/duk*.h $(1)/usr/include/
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/libduktape.so.* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/libduktape.so* $(1)/usr/lib/
 #	$(INSTALL_DIR) $(1)/usr/bin
 #	$(CP) $(PKG_BUILD_DIR)/duk $(1)/usr/bin/
 	$(INSTALL_DIR) $(1)/usr/lib/pkgconfig
@@ -69,7 +69,7 @@ endef
 
 define Package/libduktape/install
 	$(INSTALL_DIR) $(1)/usr/lib
-	$(CP) $(PKG_BUILD_DIR)/libduktape.so.* $(1)/usr/lib/
+	$(CP) $(PKG_BUILD_DIR)/libduktape.so* $(1)/usr/lib/
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(CP) $(PKG_BUILD_DIR)/duk $(1)/usr/bin/
 endef
