@@ -46,7 +46,7 @@ endef
 
 CONFIGURE_ARGS += \
 	--enable-reuseaddr \
-
+	--enable-ipv6 \
 
 define Build/InstallDev
 	$(INSTALL_DIR) $(1)/usr/include

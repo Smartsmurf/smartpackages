@@ -31,7 +31,7 @@ define Package/gerbera
   CATEGORY:=Multimedia
   TITLE:=A lightweight media server
   URL:=http://gerbera.io/
-  DEPENDS:=+libstdcpp +libupnp-1.8 +libcurl +libexpat +libsqlite3 +libmagic +libexif +libuuid +libtag +libduktape 
+  DEPENDS:=+libstdcpp +libupnp-1.8 +libcurl +libexpat +libsqlite3 +libmagic +libexif +libuuid +libtag +libduktape +file
 endef
 
 define Package/gerbera/description
@@ -39,10 +39,11 @@ define Package/gerbera/description
  Stream your media to devices on your home network.
 endef
 
-TARGET_CFLAGS += -ffunction-sections -fdata-sections
-TARGET_LDFLAGS += -Wl,--gc-sections
+# TARGET_CFLAGS += -ffunction-sections -fdata-sections
+# TARGET_LDFLAGS += -Wl,--gc-sections
 
-# CMAKE_OPTIONS += -DWITH_JS=0
+#CMAKE_OPTIONS += -DWITH_MAGIC=0
+#CMAKE_OPTIONS += -DWITH_JS=0
 CMAKE_OPTIONS += -DWITH_SYSTEMD=0
 
 define Package/gerbera/conffiles

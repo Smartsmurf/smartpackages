@@ -70,8 +70,8 @@ endef
 define Package/libduktape/install
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(CP) $(PKG_BUILD_DIR)/libduktape.so* $(1)/usr/lib/
-	$(INSTALL_DIR) $(1)/usr/bin
-	$(CP) $(PKG_BUILD_DIR)/duk $(1)/usr/bin/
+#	$(INSTALL_DIR) $(1)/usr/bin
+#	$(CP) $(PKG_BUILD_DIR)/duk $(1)/usr/bin/
 endef
 
 $(eval $(call BuildPackage,libduktape))
