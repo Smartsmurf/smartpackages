@@ -15,7 +15,7 @@
           <database-file>/var/lib/gerbera/gerbera.db</database-file>
       </sqlite3>
     </storage>
-    <protocolInfo extend="no"/><!-- For PS3 support change to "yes" -->
+    <protocolInfo extend="no"/><!-- For PS3 / Samsung DTV support change to "yes" -->
     <extended-runtime-options>
       <mark-played-items enabled="no" suppress-cds-updates="yes">
         <string mode="prepend">*</string>
@@ -24,7 +24,14 @@
         </mark>
       </mark-played-items>
     </extended-runtime-options>
-   </server>
+    <!-- Uncomment the following lines for Samsung DTV -->
+<!--
+    <custom-http-headers>
+      <add header="transferMode.dlna.org: Streaming"/>
+      <add header="contentFeatures.dlna.org: DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000"/>
+-->
+    </custom-http-headers>
+  </server>
 <import hidden-files="no">
     <scripting script-charset="UTF-8">
       <common-script>/usr/local/share/gerbera/js/common.js</common-script>
@@ -58,6 +65,10 @@
         <!-- <map from="avi" to="video/divx"/> -->
         <!-- Uncomment the line below for D-Link DSM / ZyXEL DMA-1000 -->
         <!-- <map from="avi" to="video/avi"/> -->
+        <!-- Uncomment the line below for Samsung DTV -->
+        <!-- <map from="avi" to="video/mpeg"/> -->
+        <!-- <map from="mkv" to="video/mpeg"/> -->
+        <!-- <map from="mp4" to="video/mpeg"/> -->
       </extension-mimetype>
       <mimetype-upnpclass>
         <map from="audio/*" to="object.item.audioItem.musicTrack"/>

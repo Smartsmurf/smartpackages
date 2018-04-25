@@ -39,11 +39,6 @@ define Package/gerbera/description
  Stream your media to devices on your home network.
 endef
 
-# TARGET_CFLAGS += -ffunction-sections -fdata-sections
-# TARGET_LDFLAGS += -Wl,--gc-sections
-
-#CMAKE_OPTIONS += -DWITH_MAGIC=0
-#CMAKE_OPTIONS += -DWITH_JS=0
 CMAKE_OPTIONS += -DWITH_SYSTEMD=0
 
 define Package/gerbera/conffiles
