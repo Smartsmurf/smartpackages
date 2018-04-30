@@ -230,3 +230,47 @@
  extern WebServerState bWebServerState;
  
  
+--- a/upnp/src/soap/soap_device.c	2017-11-14 12:02:53.000000000 +0100
++++ b/upnp/src/soap/soap_device.c	2018-04-30 10:49:17.470357328 +0200
+@@ -144,11 +144,12 @@
+ 	/* make headers */
+ 	membuffer_init(&headers);
+ 	if (http_MakeMessage(&headers, major, minor,
+-			"RNsDsSXcc" "sssss",
++			"RNsDsSAXcc" "sssss",
+ 			500,
+ 			content_length,
+ 			ContentTypeHeader,
+ 			"EXT:\r\n",
++			gUserHTTPHeaders.buf,
+ 			X_USER_AGENT,
+ 			start_body, err_code_str, mid_body, err_msg,
+ 			end_body) != 0) {
+@@ -196,11 +197,12 @@
+ 	/* make headers */
+ 	membuffer_init(&response);
+ 	if (http_MakeMessage(&response, major, minor,
+-			"RNsDsSXcc" "sss",
++			"RNsDsSAXcc" "sss",
+ 			HTTP_OK,
+ 			content_length,
+ 			ContentTypeHeader,
+ 			"EXT:\r\n",
++			gUserHTTPHeaders.buf,
+ 			X_USER_AGENT,
+ 			start_body, var_value, end_body) != 0) {
+ 		membuffer_destroy(&response);
+@@ -252,11 +254,11 @@
+ 		strlen(end_body));
+ 	/* make headers */
+ 	if (http_MakeMessage(&headers, major, minor,
+-			"RNsDsSXcc",
++			"RNsDsSAXcc",
+ 			HTTP_OK,	/* status code */
+ 			content_length,
+ 			ContentTypeHeader,
+-			"EXT:\r\n", X_USER_AGENT) != 0) {
++			"EXT:\r\n", gUserHTTPHeaders.buf, X_USER_AGENT) != 0) {
+ 		goto error_handler;
+ 	}
+ 	/* send whole msg */
