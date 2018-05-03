@@ -1,0 +1,32 @@
+#
+# required for Samsung DTV
+--- a/src/file_request_handler.cc	2018-03-20 02:41:19.000000000 +0100
++++ b/src/file_request_handler.cc	2018-05-03 16:54:28.409273860 +0200
+@@ -233,6 +233,7 @@
+ #ifdef EXTEND_PROTOCOLINFO
+         Ref<ConfigManager> cfg = ConfigManager::getInstance();
+         if (cfg->getBoolOption(CFG_SERVER_EXTEND_PROTOCOLINFO_SM_HACK)) {
++            String url = _("");
+             if (item->getMimeType().startsWith(_("video"))) {
+                 // Look for subtitle file and returns it's URL
+                 // in CaptionInfo.sec response header.
+@@ -261,15 +262,15 @@
+                     String burlpath = _(filename);
+                     burlpath = burlpath.substring(0, burlpath.rindex('.'));
+                     Ref<Server> server = Server::getInstance();
+-                    String url = _("http://")
++                    url = _("http://")
+                         + server->getIP() + ":" + server->getPort()
+                         + burlpath + validext;
+ 
+-                    if (string_ok(header))
+-                        header = header + _("\r\n");
+-                    header = header + "CaptionInfo.sec: " + url;
+                 }
+             }
++            if (string_ok(header))
++                header = header + _("\r\n");
++            header = header + "CaptionInfo.sec: " + url;
+         }
+ #endif
+     }
