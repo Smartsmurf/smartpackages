@@ -1,0 +1,137 @@
+#
+# This patch enables gerbera to deliver DLNA content to Samsung DTV devices
+# Tested @ LE40B650
+#
+# Andreas Fiedler (smartsmurf@shared-files.de)
+--- a/src/cds_resource_manager.cc	2018-03-20 02:41:19.000000000 +0100
++++ b/src/cds_resource_manager.cc	2018-05-04 12:43:16.416702000 +0200
+@@ -407,11 +407,7 @@
+         if (config->getBoolOption(CFG_SERVER_EXTEND_PROTOCOLINFO))
+         {
+             String extend;
+-            if (contentType == CONTENT_TYPE_MP3)
+-                extend = _(D_PROFILE) + "=" + D_MP3 + ";";
+-            else if (contentType == CONTENT_TYPE_PCM)
+-                extend = _(D_PROFILE) + "=" + D_LPCM + ";";
+-            else if (contentType == CONTENT_TYPE_JPG)
++            if (contentType == CONTENT_TYPE_JPG)
+             {
+                 String resolution = res_attrs->get(MetadataHandler::getResAttrName(R_RESOLUTION));
+                 int x;
+@@ -437,6 +433,11 @@
+                     else if ((x <= 4096) && (y <=4096))
+                         extend = _(D_PROFILE) + "=" + D_JPEG_LRG+";";
+                 }
++            } else {
++                /* handle audio/video content */
++                extend = getDLNAprofileString(contentType);
++                if (string_ok(extend))
++                    extend = extend + ";";
+             }
+ 
+         // we do not support seeking at all, so 00
+--- a/src/common.h	2018-03-20 02:41:19.000000000 +0100
++++ b/src/common.h	2018-05-04 09:33:58.424236000 +0200
+@@ -66,6 +66,7 @@
+     #define D_HTTP_TRANSFER_MODE_HEADER         "transferMode.dlna.org: "
+     #define D_HTTP_TRANSFER_MODE_STREAMING      "Streaming"
+     #define D_HTTP_TRANSFER_MODE_INTERACTIVE    "Interactive"
++    #define D_HTTP_CONTENT_FEATURES_HEADER      "contentFeatures.dlna.org: "
+ 
+     #define D_PROFILE                   "DLNA.ORG_PN"
+     #define D_CONVERSION_INDICATOR      "DLNA.ORG_CI"
+@@ -73,8 +74,8 @@
+     #define D_FLAGS                     "DLNA.ORG_FLAGS"
+     #define D_NO_CONVERSION             "0"
+     #define D_CONVERSION                "1"
+-    #define D_TR_FLAGS_AV               "012000000000000000000000000000000"
+-    #define D_TR_FLAGS_IMAGE            "008000000000000000000000000000000"
++    #define D_TR_FLAGS_AV               "01200000000000000000000000000000"
++    #define D_TR_FLAGS_IMAGE            "00800000000000000000000000000000"
+     #define D_MP3                       "MP3"
+     #define D_LPCM                      "LPCM"
+     #define D_JPEG_SM                   "JPEG_SM"
+@@ -83,6 +84,10 @@
+     #define D_JPEG_TN                   "JPEG_TN"
+     #define D_JPEG_SM_ICO               "JPEG_SM_ICO"
+     #define D_JPEG_LRG_ICO              "JPEG_LRG_ICO"
++    #define D_PN_MPEG_PS_PAL            "MPEG_PS_PAL"
++    #define D_PN_MKV                    "MKV"
++    #define D_PN_AVC_MP4_EU             "AVC_MP4_EU"
++    #define D_PN_AVI                    "AVI"
+ #endif
+ // fixed CdsObjectIDs
+ #define CDS_ID_BLACKHOLE                -1
+--- a/src/file_request_handler.cc	2018-03-20 02:41:19.000000000 +0100
++++ b/src/file_request_handler.cc	2018-05-04 12:43:21.984702000 +0200
+@@ -271,6 +271,9 @@
+                 }
+             }
+         }
++	    Ref<Dictionary> mappings = cfg->getDictionaryOption(
++	                        CFG_IMPORT_MAPPINGS_MIMETYPE_TO_CONTENTTYPE_LIST);
++		header = getDLNAcontentHeader(mappings->get(mimeType), header);
+ #endif
+     }
+ 
+--- a/src/tools.cc	2018-03-20 02:41:19.000000000 +0100
++++ b/src/tools.cc	2018-05-04 11:32:04.172527000 +0200
+@@ -1440,6 +1440,47 @@
+ }
+ 
+ #ifdef EXTEND_PROTOCOLINFO
++String getDLNAprofileString(String contentType)
++{
++	String profile;
++	if (contentType == CONTENT_TYPE_MP4)
++		profile = _(D_PN_AVC_MP4_EU);
++	else if (contentType == CONTENT_TYPE_MKV)
++		profile = _(D_PN_MKV);
++	else if (contentType == CONTENT_TYPE_AVI)
++		profile = _(D_PN_AVI);
++	else if (contentType == CONTENT_TYPE_MPEG)
++		profile = _(D_PN_MPEG_PS_PAL);
++	else if (contentType == CONTENT_TYPE_MP3)
++		profile = _(D_MP3);
++    else if (contentType == CONTENT_TYPE_PCM)
++		profile = _(D_LPCM);
++	else
++		profile = _("");   
++
++    if (string_ok(profile))
++		profile = _(D_PROFILE) + "=" + profile;
++	return profile;
++}
++
++String getDLNAcontentHeader(String contentType, String header)
++{
++	if (ConfigManager::getInstance()->getBoolOption(CFG_SERVER_EXTEND_PROTOCOLINFO))
++	{
++		String content_parameter;
++		content_parameter = getDLNAprofileString(contentType);
++		if (string_ok(content_parameter))
++			content_parameter = content_parameter + ";";
++		content_parameter = content_parameter + D_OP + "=01;";
++		content_parameter = content_parameter + D_CONVERSION_INDICATOR + "=" + D_NO_CONVERSION + ";";
++		content_parameter = content_parameter + D_FLAGS "=" D_TR_FLAGS_AV;
++		if (string_ok(header))
++			header = header + _("\r\n");
++		header = header + D_HTTP_CONTENT_FEATURES_HEADER +
++					content_parameter;
++	}
++}
++
+ String getDLNAtransferHeader(String mimeType, String header)
+ {
+         if (ConfigManager::getInstance()->getBoolOption(CFG_SERVER_EXTEND_PROTOCOLINFO))
+--- a/src/tools.h	2018-03-20 02:41:19.000000000 +0100
++++ b/src/tools.h	2018-05-04 11:32:06.776527000 +0200
+@@ -340,6 +340,8 @@
+ 
+ #ifdef EXTEND_PROTOCOLINFO
+ zmm::String getDLNAtransferHeader(zmm::String mimeType, zmm::String header);
++zmm::String getDLNAprofileString(zmm::String contentType);
++zmm::String getDLNAcontentHeader(zmm::String contentType, zmm::String header);
+ #endif
+ 
+ #ifndef HAVE_FFMPEG

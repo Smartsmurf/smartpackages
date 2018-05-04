@@ -29,8 +29,8 @@
     <custom-http-headers>
       <add header="transferMode.dlna.org: Streaming"/>
       <add header="contentFeatures.dlna.org: DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=017000 00000000000000000000000000"/>
--->
     </custom-http-headers>
+-->
   </server>
 <import hidden-files="no">
     <scripting script-charset="UTF-8">
