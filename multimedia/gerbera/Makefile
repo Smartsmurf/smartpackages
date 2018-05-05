@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2013 OpenWrt.org
+# Copyright (C) 2018 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -14,7 +14,7 @@ PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/gerbera/gerbera
 PKG_SOURCE_DATE:=2018-03-21
 PKG_SOURCE_VERSION:=64162b3c167ffe15a0b1476c85c00479bfcffaff
-PKG_MAINTAINER:=Angel Dust <smartsmurf@shared-files.de>
+PKG_MAINTAINER:=Andreas Fiedler <smartsmurf@shared-files.de>
 
 PKG_LICENSE:=GPL-2.0
 PKG_LICENSE_FILES:=COPYING
@@ -26,13 +26,19 @@ define Package/gerbera/Default
 
 endef
 
+#
+#
+# Regarding dependency libffmpeg:
+#  - libffmpeg-mini will bring too many codecs which is only usefull on powerfull systems
+#  - libffmpeg-custum is sufficient as long as one selects all parsers and all formats
 define Package/gerbera
   SECTION:=multimedia
   CATEGORY:=Multimedia
   TITLE:=A lightweight media server
   URL:=http://gerbera.io/
-  DEPENDS:=+libstdcpp +libupnp-1.8 +libcurl +libexpat +libsqlite3 +libmagic +libexif +libuuid +libtag +libduktape +file
+  DEPENDS:=+libstdcpp +libupnp-1.8 +libcurl +libexpat +libsqlite3 +libmagic +libexif +libuuid +libtag +libduktape +libffmpeg-custom +file
 endef
+
 
 define Package/gerbera/description
  A free media server.
@@ -40,6 +46,7 @@ define Package/gerbera/description
 endef
 
 CMAKE_OPTIONS += -DWITH_SYSTEMD=0
+CMAKE_OPTIONS += -DWITH_AVCODEC=1
 
 define Package/gerbera/conffiles
 /etc/gerbera
