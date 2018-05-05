@@ -1,4 +1,8 @@
-# Some http responses need \r\n\r\n as EOF marker 
+# 
+# Some Samsung DTV are really picky about proper http responses
+# HEAD ... HTTP/1.0 need \r\n\r\n as EOF marker 
+#
+# Andreas Fiedler (smartsmurf@shared-files.de)
 --- a/upnp/src/genlib/net/http/httpreadwrite.c	2017-11-14 12:02:53.000000000 +0100
 +++ b/upnp/src/genlib/net/http/httpreadwrite.c	2018-05-04 03:41:05.984601521 +0200
 @@ -1455,7 +1455,7 @@
