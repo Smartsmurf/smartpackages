@@ -1,0 +1,12 @@
+diff -Nur gerbera-2018-04-29-c7f3f301/src/tools.cc gerbera-2018-04-29-c7f3f301k/src/tools.cc
+--- gerbera-2018-04-29-c7f3f301/src/tools.cc	2018-11-29 01:42:30.561427085 +0100
++++ gerbera-2018-04-29-c7f3f301k/src/tools.cc	2018-11-29 01:41:28.921602000 +0100
+@@ -1461,7 +1461,7 @@
+ 		String content_parameter;
+ 		content_parameter = getDLNAprofileString(contentType);
+ 		if (string_ok(content_parameter))
+-			content_parameter = _(D_PROFILE) + _("=") + content_parameter + ";";
++			content_parameter = content_parameter + ";";
+ 		content_parameter = content_parameter + D_OP + "=01;";
+ 		content_parameter = content_parameter + D_CONVERSION_INDICATOR + "=" + D_NO_CONVERSION + ";";
+ 		content_parameter = content_parameter + D_FLAGS "=" D_TR_FLAGS_AV;
