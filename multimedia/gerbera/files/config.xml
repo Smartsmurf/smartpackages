@@ -12,7 +12,7 @@
     <webroot>/usr/share/gerbera/web</webroot>
     <storage>
       <sqlite3 enabled="yes">    
-          <database-file>/var/lib/gerbera/gerbera.db</database-file>
+          <database-file>/var/gerbera.db</database-file>
       </sqlite3>
     </storage>
     <protocolInfo extend="no"/><!-- For PS3 / Samsung DTV support change to "yes" -->
@@ -34,10 +34,10 @@
   </server>
 <import hidden-files="no">
     <scripting script-charset="UTF-8">
-      <common-script>/usr/local/share/gerbera/js/common.js</common-script>
-      <playlist-script>/usr/local/share/gerbera/js/playlists.js</playlist-script>
+      <common-script>/usr/share/gerbera/js/common.js</common-script>
+      <playlist-script>/usr/share/gerbera/js/playlists.js</playlist-script>
       <virtual-layout type="builtin">
-        <import-script>/usr/local/share/gerbera/js/import.js</import-script>
+        <import-script>/usr/share/gerbera/js/import.js</import-script>
       </virtual-layout>
     </scripting>
     <mappings>

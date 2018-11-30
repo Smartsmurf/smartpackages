@@ -8,12 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gerbera
-PKG_RELEASE:=1.2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/gerbera/gerbera
+#PKG_RELEASE:=1.1
 #PKG_SOURCE_DATE:=2018-03-21
 #PKG_SOURCE_VERSION:=64162b3c167ffe15a0b1476c85c00479bfcffaff
+PKG_RELEASE:=1.2
 PKG_SOURCE_DATE:=2018-04-29
 PKG_SOURCE_VERSION:=c7f3f301ad357d15720edca63ea6b81865d13e0e
 PKG_MAINTAINER:=Andreas Fiedler <smartsmurf@shared-files.de>
