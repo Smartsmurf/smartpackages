@@ -1,0 +1,12 @@
+diff -Nur a/hotspot/make/linux/Makefile b/hotspot/make/linux/Makefile
+--- a/hotspot/make/linux/Makefile	2019-09-03 03:04:03.753842747 +0200
++++ b/hotspot/make/linux/Makefile	2017-07-05 19:25:40.000000000 +0200
+@@ -225,7 +225,7 @@
+ # Solaris 2.5.1, 2.6).
+ # Disable this check by setting DISABLE_HOTSPOT_OS_VERSION_CHECK=ok.
+ 
+-SUPPORTED_OS_VERSION = 2.4% 2.5% 2.6% 3%
++SUPPORTED_OS_VERSION = 2.4% 2.5% 2.6% 3% 4%
+ OS_VERSION := $(shell uname -r)
+ EMPTY_IF_NOT_SUPPORTED = $(filter $(SUPPORTED_OS_VERSION),$(OS_VERSION))
+ 

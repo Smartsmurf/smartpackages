@@ -1,0 +1,12 @@
+diff -Nur a/hotspot/make/linux/makefiles/gcc.make b/hotspot/make/linux/makefiles/gcc.make
+--- a/hotspot/make/linux/makefiles/gcc.make	2017-07-05 19:25:40.000000000 +0200
++++ b/hotspot/make/linux/makefiles/gcc.make	2019-09-04 13:40:23.609160371 +0200
+@@ -176,7 +176,7 @@
+ ARCHFLAG/ia64    =
+ ARCHFLAG/sparc   = -m32 -mcpu=v9
+ ARCHFLAG/sparcv9 = -m64 -mcpu=v9
+-ARCHFLAG/arm     =  -fsigned-char
++ARCHFLAG/arm     =  -fsigned-char -fhonour-copts -mfloat-abi=% -mtune=% -fmacro-prefix-map=% %eabi/usr/include %eabi/include %eabi/include/fortify
+ ARCHFLAG/zero    = $(ZERO_ARCHFLAG)
+ ifndef E500V2
+ ARCHFLAG/ppc     =  -mcpu=powerpc

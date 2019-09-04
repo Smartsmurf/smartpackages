@@ -1,0 +1,43 @@
+diff -Nur a/hotspot/src/share/vm/adlc/adlc.hpp b/hotspot/src/share/vm/adlc/adlc.hpp
+--- a/hotspot/src/share/vm/adlc/adlc.hpp	Mon May 28 10:09:33 2018 +0100
++++ b/hotspot/src/share/vm/adlc/adlc.hpp	Wed May 30 07:19:21 2018 +0100
+@@ -85,6 +85,19 @@
+ #undef max
+ #define max(a, b)   (((a)>(b)) ? (a) : (b))
+ 
++#if !defined(__clang_major__) && (__GNUC__ >= 7)
++#define PRAGMA_DIAG_PUSH             _Pragma("GCC diagnostic push")
++#define PRAGMA_DIAG_POP              _Pragma("GCC diagnostic pop")
++#define PRAGMA_FORMAT_OVERFLOW_IGNORED _Pragma("GCC diagnostic ignored \"-Wformat-overflow\"")
++#define PRAGMA_FORMAT_OVERFLOW_IGNORED_EXTERNAL PRAGMA_FORMAT_OVERFLOW_IGNORED
++#define PRAGMA_FORMAT_OVERFLOW_IGNORED_INTERNAL PRAGMA_FORMAT_OVERFLOW_IGNORED
++#else
++#define PRAGMA_DIAG_PUSH
++#define PRAGMA_DIAG_POP
++#define PRAGMA_FORMAT_OVERFLOW_IGNORED_EXTERNAL
++#define PRAGMA_FORMAT_OVERFLOW_IGNORED_INTERNAL
++#endif
++
+ // ADLC components
+ #include "arena.hpp"
+ #include "opto/adlcVMDeps.hpp"
+diff -Nur a/hotspot/src/share/vm/adlc/output_c.cpp b/hotspot/src/share/vm/adlc/output_c.cpp
+--- a/hotspot/src/share/vm/adlc/output_c.cpp
++++ b/hotspot/src/share/vm/adlc/output_c.cpp
+@@ -560,6 +560,8 @@
+   return (ndx);
+ }
+ 
++PRAGMA_DIAG_PUSH
++PRAGMA_FORMAT_OVERFLOW_IGNORED_EXTERNAL
+ void ArchDesc::build_pipe_classes(FILE *fp_cpp) {
+   const char *classname;
+   const char *resourcename;
+@@ -1016,6 +1018,7 @@
+   fprintf(fp_cpp, "}\n");
+   fprintf(fp_cpp, "#endif\n");
+ }
++PRAGMA_DIAG_POP
+ 
+ // ---------------------------------------------------------------------------
+ //------------------------------Utilities to build Instruction Classes--------
