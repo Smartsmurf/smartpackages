@@ -6,17 +6,21 @@
 #
 
 include $(TOPDIR)/rules.mk
-PKG_NAME:=jdk
-#PKG_VERSION:=a92720b96ded
-#PKG_SOURCE_PROTO:=http
-#PKG_SOURCE:=tip.tar.gz
-#PKG_SOURCE_URL:=https://hg.openjdk.java.net/aarch32-port/jdk8u/jdk/archive/
-#PKG_HASH:=518aba8fe1a4b9e819d0f97299cf776ffcec7e3a461319402c946f945b300b1b
+PKG_NAME:=jdk9
 
-PKG_VERSION:=a1ee9743f4ee
-PKG_SOURCE:=a1ee9743f4ee.tar.gz
-PKG_SOURCE_URL:=http://hg.openjdk.java.net/jdk/jdk/archive/
-PKG_HASH:=dccbabbd17bee087dac38bf4fbcd7e1c06a7547926b7208650aff8262315517d
+# OpenJDK-9
+PKG_VERSION:=a08cbfc0e4ec
+PKG_SOURCE:=a08cbfc0e4ec.tar.gz
+PKG_SOURCE_URL:=https://hg.openjdk.java.net/jdk9/jdk9/archive/
+PKG_HASH:=d016500206aded471b7d88cde53a9f7c3f2f2c0e7f78a462b1cf93f3773198d5
+
+# OpenJDK-8 (lacks ARM support)
+#PKG_VERSION:=a1ee9743f4ee
+#PKG_SOURCE:=a1ee9743f4ee.tar.gz
+#PKG_SOURCE_URL:=http://hg.openjdk.java.net/jdk/jdk/archive/
+#PKG_HASH:=dccbabbd17bee087dac38bf4fbcd7e1c06a7547926b7208650aff8262315517d
+
+
 #PKG_RELEASE:=1.2
 #PKG_SOURCE_DATE:=2018-04-29
 #PKG_SOURCE_VERSION:=c7f3f301ad357d15720edca63ea6b81865d13e0e
@@ -47,12 +51,21 @@ define Package/openjdk/description
  OpenJDK 8
 endef
 
+define Build/Prepare
+#	mkdir -p $(PKG_BUILD_DIR)
+	cd $(PKG_BUILD_DIR) && hg clone http://hg.openjdk.java.net/jdk9/jdk9 && mv jdk9/* jdk9/.hg* . && chmod 755 get_source.sh && ./get_source.sh
+	$(Build/Patch)
+endef
+
 define Build/Configure
 	cd $(PKG_BUILD_DIR) && chmod 755 configure && \
 	PKG_CONFIG="pkg-config" FREETYPE_CFLAGS="-I/usr/include/freetype2 -I/usr/include/libpng16" FREETYPE_LIBS="-L/usr/lib -lfreetype" ./configure \
 	    --host=$(REAL_GNU_TARGET_NAME) \
             --target=$(REAL_GNU_TARGET_NAME) \
-	    --disable-headful
+	    --enable-headless-only \
+            --with-abi-profile=arm-sflt \
+            --with-conf-name=softfp \
+            --with-extra-cflags=-D__SOFTFP__
 endef
 #            --openjdk-target=$(REAL_GNU_TARGET_NAME) \
 
