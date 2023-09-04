@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019-2020 CZ.NIC, z. s. p. o. (https://www.nic.cz/)
+# Copyright (C) 2015-2023 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -16,8 +16,8 @@ PYPI_SOURCE_EXT:=zip
 PKG_HASH:=4d1b810aa0ed773f81dceda2cc7b403d01057458730e309856356d4ef4188438
 
 PKG_MAINTAINER:=Andreas Fiedler <andreas.fiedler@gmx.net>
-PKG_LICENSE:=BSD-3-Clause
-PKG_LICENSE_FILES:=LICENSE
+PKG_LICENSE:=Apache-2.0 BSD-3-Clause
+PKG_LICENSE_FILES:=LICENSE.APACHE LICENSE.BSD
 
 include $(TOPDIR)/feeds/packages/lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk
