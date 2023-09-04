@@ -1,0 +1,289 @@
+--- a/taglib/mp4/mp4atom.h	2021-01-23 09:15:32.000000000 +0100
++++ b/taglib/mp4/mp4atom.h	2021-10-19 03:11:15.876719505 +0200
+@@ -82,7 +82,7 @@
+       Atom *find(const char *name1, const char *name2 = 0, const char *name3 = 0, const char *name4 = 0);
+       bool path(AtomList &path, const char *name1, const char *name2 = 0, const char *name3 = 0);
+       AtomList findall(const char *name, bool recursive = false);
+-      long offset;
++      off_t offset;
+       long length;
+       TagLib::ByteVector name;
+       AtomList children;
+--- a/taglib/toolkit/tbytevectorstream.cpp	2021-01-23 09:15:32.000000000 +0100
++++ b/taglib/toolkit/tbytevectorstream.cpp	2021-10-19 03:17:26.105457940 +0200
+@@ -127,7 +127,7 @@
+   return true;
+ }
+ 
+-void ByteVectorStream::seek(long offset, Position p)
++void ByteVectorStream::seek(off_t offset, Position p)
+ {
+   switch(p) {
+   case Beginning:
+@@ -146,17 +146,17 @@
+ {
+ }
+ 
+-long ByteVectorStream::tell() const
++off_t ByteVectorStream::tell() const
+ {
+   return d->position;
+ }
+ 
+-long ByteVectorStream::length()
++off_t ByteVectorStream::length()
+ {
+   return d->data.size();
+ }
+ 
+-void ByteVectorStream::truncate(long length)
++void ByteVectorStream::truncate(off_t length)
+ {
+   d->data.resize(length);
+ }
+--- a/taglib/toolkit/tbytevectorstream.h	2021-01-23 09:15:32.000000000 +0100
++++ b/taglib/toolkit/tbytevectorstream.h	2021-10-19 03:16:31.204958878 +0200
+@@ -26,6 +26,7 @@
+ #ifndef TAGLIB_BYTEVECTORSTREAM_H
+ #define TAGLIB_BYTEVECTORSTREAM_H
+ 
++#include <sys/types.h>
+ #include "taglib_export.h"
+ #include "taglib.h"
+ #include "tbytevector.h"
+@@ -109,7 +110,7 @@
+      *
+      * \see Position
+      */
+-    void seek(long offset, Position p = Beginning);
++    void seek(off_t offset, Position p = Beginning);
+ 
+     /*!
+      * Reset the end-of-file and error flags on the file.
+@@ -119,17 +120,17 @@
+     /*!
+      * Returns the current offset within the file.
+      */
+-    long tell() const;
++    off_t tell() const;
+ 
+     /*!
+      * Returns the length of the file.
+      */
+-    long length();
++    off_t length();
+ 
+     /*!
+      * Truncates the file to a \a length.
+      */
+-    void truncate(long length);
++    void truncate(off_t length);
+ 
+     ByteVector *data();
+ 
+--- a/taglib/toolkit/tfile.cpp	2021-01-23 09:15:32.000000000 +0100
++++ b/taglib/toolkit/tfile.cpp	2021-10-19 03:03:14.577083851 +0200
+@@ -428,12 +428,12 @@
+   return isOpen() && d->valid;
+ }
+ 
+-void File::seek(long offset, Position p)
++void File::seek(off_t offset, Position p)
+ {
+   d->stream->seek(offset, IOStream::Position(p));
+ }
+ 
+-void File::truncate(long length)
++void File::truncate(off_t length)
+ {
+   d->stream->truncate(length);
+ }
+@@ -443,12 +443,12 @@
+   d->stream->clear();
+ }
+ 
+-long File::tell() const
++off_t File::tell() const
+ {
+   return d->stream->tell();
+ }
+ 
+-long File::length()
++off_t File::length()
+ {
+   return d->stream->length();
+ }
+--- a/taglib/toolkit/tfile.h	2021-01-23 09:15:32.000000000 +0100
++++ b/taglib/toolkit/tfile.h	2021-10-19 03:11:46.289495493 +0200
+@@ -26,6 +26,7 @@
+ #ifndef TAGLIB_FILE_H
+ #define TAGLIB_FILE_H
+ 
++#include <sys/types.h>
+ #include "taglib_export.h"
+ #include "taglib.h"
+ #include "tag.h"
+@@ -240,7 +241,7 @@
+      *
+      * \see Position
+      */
+-    void seek(long offset, Position p = Beginning);
++    void seek(off_t offset, Position p = Beginning);
+ 
+     /*!
+      * Reset the end-of-file and error flags on the file.
+@@ -250,12 +251,12 @@
+     /*!
+      * Returns the current offset within the file.
+      */
+-    long tell() const;
++    off_t tell() const;
+ 
+     /*!
+      * Returns the length of the file.
+      */
+-    long length();
++    off_t length();
+ 
+     /*!
+      * Returns true if \a file can be opened for reading.  If the file does not
+@@ -303,7 +304,7 @@
+     /*!
+      * Truncates the file to a \a length.
+      */
+-    void truncate(long length);
++    void truncate(off_t length);
+ 
+     /*!
+      * Returns the buffer size that is used for internal buffering.
+--- a/taglib/toolkit/tfilestream.cpp	2021-01-23 09:15:32.000000000 +0100
++++ b/taglib/toolkit/tfilestream.cpp	2021-10-19 03:13:57.323890288 +0200
+@@ -360,7 +360,7 @@
+   return (d->file != InvalidFileHandle);
+ }
+ 
+-void FileStream::seek(long offset, Position p)
++void FileStream::seek(off_t offset, Position p)
+ {
+   if(!isOpen()) {
+     debug("FileStream::seek() -- invalid file.");
+@@ -417,7 +417,7 @@
+ #endif
+ }
+ 
+-long FileStream::tell() const
++off_t FileStream::tell() const
+ {
+ #ifdef _WIN32
+ 
+@@ -440,7 +440,7 @@
+ #endif
+ }
+ 
+-long FileStream::length()
++off_t FileStream::length()
+ {
+   if(!isOpen()) {
+     debug("FileStream::length() -- invalid file.");
+@@ -461,10 +461,10 @@
+ 
+ #else
+ 
+-  const long curpos = tell();
++  const off_t curpos = tell();
+ 
+   seek(0, End);
+-  const long endpos = tell();
++  const off_t endpos = tell();
+ 
+   seek(curpos, Beginning);
+ 
+@@ -477,7 +477,7 @@
+ // protected members
+ ////////////////////////////////////////////////////////////////////////////////
+ 
+-void FileStream::truncate(long length)
++void FileStream::truncate(off_t length)
+ {
+ #ifdef _WIN32
+ 
+--- a/taglib/toolkit/tfilestream.h	2021-01-23 09:15:32.000000000 +0100
++++ b/taglib/toolkit/tfilestream.h	2021-10-19 03:07:08.172083141 +0200
+@@ -26,6 +26,7 @@
+ #ifndef TAGLIB_FILESTREAM_H
+ #define TAGLIB_FILESTREAM_H
+ 
++#include <sys/types.h>
+ #include "taglib_export.h"
+ #include "taglib.h"
+ #include "tbytevector.h"
+@@ -120,7 +121,7 @@
+      *
+      * \see Position
+      */
+-    void seek(long offset, Position p = Beginning);
++    void seek(off_t offset, Position p = Beginning);
+ 
+     /*!
+      * Reset the end-of-file and error flags on the file.
+@@ -130,17 +131,17 @@
+     /*!
+      * Returns the current offset within the file.
+      */
+-    long tell() const;
++    off_t tell() const;
+ 
+     /*!
+      * Returns the length of the file.
+      */
+-    long length();
++    off_t length();
+ 
+     /*!
+      * Truncates the file to a \a length.
+      */
+-    void truncate(long length);
++    void truncate(off_t length);
+ 
+   protected:
+ 
+--- a/taglib/toolkit/tiostream.h	2021-01-23 09:15:32.000000000 +0100
++++ b/taglib/toolkit/tiostream.h	2021-10-19 03:15:25.658286334 +0200
+@@ -26,6 +26,7 @@
+ #ifndef TAGLIB_IOSTREAM_H
+ #define TAGLIB_IOSTREAM_H
+ 
++#include <sys/types.h>
+ #include "taglib_export.h"
+ #include "taglib.h"
+ #include "tbytevector.h"
+@@ -138,7 +139,7 @@
+      *
+      * \see Position
+      */
+-    virtual void seek(long offset, Position p = Beginning) = 0;
++    virtual void seek(off_t offset, Position p = Beginning) = 0;
+ 
+     /*!
+      * Reset the end-of-stream and error flags on the stream.
+@@ -148,17 +149,17 @@
+     /*!
+      * Returns the current offset within the stream.
+      */
+-    virtual long tell() const = 0;
++    virtual off_t tell() const = 0;
+ 
+     /*!
+      * Returns the length of the stream.
+      */
+-    virtual long length() = 0;
++    virtual off_t length() = 0;
+ 
+     /*!
+      * Truncates the stream to a \a length.
+      */
+-    virtual void truncate(long length) = 0;
++    virtual void truncate(off_t length) = 0;
+ 
+   private:
+     IOStream(const IOStream &);

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2018 OpenWrt.org
+# Copyright (C) 2011-2020 Entware
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -8,64 +8,79 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gerbera
+PKG_VERSION:=1.12.1
+PKG_RELEASE:=$(AUTORELEASE)
 
-PKG_SOURCE_PROTO:=git
-PKG_SOURCE_URL:=https://github.com/gerbera/gerbera
-#PKG_RELEASE:=1.1
-#PKG_SOURCE_DATE:=2018-03-21
-#PKG_SOURCE_VERSION:=64162b3c167ffe15a0b1476c85c00479bfcffaff
-PKG_RELEASE:=1.2
-PKG_SOURCE_DATE:=2018-04-29
-PKG_SOURCE_VERSION:=c7f3f301ad357d15720edca63ea6b81865d13e0e
-PKG_MAINTAINER:=Andreas Fiedler <smartsmurf@shared-files.de>
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://codeload.github.com/gerbera/gerbera/tar.gz/v$(PKG_VERSION)?
+PKG_HASH:=2144a7c4a13e8b43aa0c911fbeae65f05e2c42254ddd03be5c41f5fcf103a93c
 
-PKG_LICENSE:=GPL-2.0
-PKG_LICENSE_FILES:=COPYING
+PKG_MAINTAINER:=
+PKG_LICENSE:=GPL-2.0-or-later
+PKG_LICENSE_FILES:=LICENSE.md
+
+PKG_BUILD_DEPENDS:=libmatroska pugixml spdlog taglib
+PKG_CONFIG_DEPENDS:=CONFIG_BUILD_PATENTED
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/nls.mk
 include $(INCLUDE_DIR)/cmake.mk
 
-define Package/gerbera/Default
-
-endef
-
-#
-#
-# Regarding dependency libffmpeg:
-#  - libffmpeg-mini will bring too many codecs which is only usefull on powerfull systems
-#  - libffmpeg-custum is sufficient as long as one selects all parsers and all formats
 define Package/gerbera
   SECTION:=multimedia
   CATEGORY:=Multimedia
-  TITLE:=A lightweight media server
-  URL:=http://gerbera.io/
-  DEPENDS:=+libstdcpp +libupnp-1.8 +libcurl +libexpat +libsqlite3 +libmagic +libexif +libuuid +libtag +libduktape +libffmpeg-custom +file
+  DEPENDS:=+file +libnpupnp +libsqlite3 +libexif +libuuid +libfmt +libatomic +taglib +BUILD_PATENTED:libffmpeg $(ICONV_DEPENDS)
+  TITLE:=A free media server
+  URL:=https://gerbera.io
+  USERID:=gerbera:gerbera
 endef
-
 
 define Package/gerbera/description
- A free media server.
- Stream your media to devices on your home network.
+  Gerbera - UPnP Media Server based on Mediatomb.
 endef
-
-CMAKE_OPTIONS += -DWITH_SYSTEMD=0
-CMAKE_OPTIONS += -DWITH_AVCODEC=1
 
 define Package/gerbera/conffiles
-/etc/gerbera
+/etc/config/gerbera
 endef
 
+CMAKE_OPTIONS += \
+	-DCMAKE_LINK_WHAT_YOU_USE=$(if $(CONFIG_HOST_OS_MACOS),OFF,ON) \
+	-DIconv_INCLUDE_DIR=$(ICONV_PREFIX)/include \
+	-DIconv_LIBRARY=$(ICONV_PREFIX)/lib/libiconv.a \
+	-DWITH_MAGIC=ON \
+	-DWITH_MYSQL=OFF \
+	-DWITH_CURL=ON \
+	-DWITH_INOTIFY=ON \
+	-DWITH_JS=OFF \
+	-DWITH_TAGLIB=ON \
+	-DWITH_AVCODEC=$(if $(CONFIG_BUILD_PATENTED),ON,OFF) \
+	-DWITH_FFMPEGTHUMBNAILER=OFF \
+	-DWITH_EXIF=ON \
+	-DWITH_EXIV2=OFF \
+	-DWITH_MATROSKA=ON \
+	-DWITH_SYSTEMD=OFF \
+	-DWITH_LASTFM=OFF \
+	-DWITH_DEBUG=OFF \
+	-DWITH_TESTS=OFF \
+	-DWITH_NPUPNP=ON
+
+TARGET_CFLAGS += \
+	-ffunction-sections \
+	-fdata-sections \
+	-flto
+
+TARGET_LDFLAGS += -Wl,--gc-sections
+
 define Package/gerbera/install
-	$(INSTALL_DIR) $(1)/etc/gerbera
-	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/gerbera $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/usr/share
-	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/gerbera $(1)/usr/bin/
-	$(CP)  $(PKG_INSTALL_DIR)/usr/share/* $(1)/usr/share/
-	$(INSTALL_DATA) ./files/config.xml $(1)/etc/gerbera/
+	$(CP) $(PKG_INSTALL_DIR)/usr/share/gerbera $(1)/usr/share
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_CONF) ./files/gerbera.config $(1)/etc/config/gerbera
+	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/gerbera.init $(1)/etc/init.d/gerbera
 endef
 
 $(eval $(call BuildPackage,gerbera))
-
 

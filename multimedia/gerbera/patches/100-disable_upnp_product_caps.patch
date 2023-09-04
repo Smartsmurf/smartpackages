@@ -1,0 +1,14 @@
+--- a/src/upnp_xml.cc
++++ b/src/upnp_xml.cc
+@@ -265,8 +273,8 @@
+     const auto deviceStringProperties = std::array {
+         std::pair("deviceType", UPNP_DESC_DEVICE_TYPE),
+         std::pair("presentationURL", presentationURL.empty() ? "/" : presentationURL.c_str()),
+-        std::pair("sec:ProductCap", UPNP_DESC_PRODUCT_CAPS),
+-        std::pair("sec:X_ProductCap", UPNP_DESC_PRODUCT_CAPS), // used by SAMSUNG
++ //       std::pair("sec:ProductCap", UPNP_DESC_PRODUCT_CAPS),
++ //       std::pair("sec:X_ProductCap", UPNP_DESC_PRODUCT_CAPS), // used by SAMSUNG
+     };
+     for (auto&& [tag, value] : deviceStringProperties) {
+         device.append_child(tag).append_child(pugi::node_pcdata).set_value(value);
+
