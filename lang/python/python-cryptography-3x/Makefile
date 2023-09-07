@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2015-2023 OpenWrt.org
+# Copyright (C) 2023 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
@@ -18,11 +18,17 @@ PKG_MAINTAINER:=Andreas Fiedler <andreas.fiedler@gmx.net>
 PKG_LICENSE:=Apache-2.0 BSD-3-Clause
 PKG_LICENSE_FILES:=LICENSE.APACHE LICENSE.BSD
 
-PKG_BUILD_DEPENDS:=libffi/host python-cffi/host  # cffi>=1.12
+PKG_BUILD_DEPENDS:=libffi/host python-cffi/host python-setuptools-rust/host
 
 include $(TOPDIR)/feeds/packages/lang/python/pypi.mk
 include $(INCLUDE_DIR)/package.mk
 include $(TOPDIR)/feeds/packages/lang/python/python3-package.mk
+include $(TOPDIR)/feeds/packages/lang/rust/rust-values.mk
+
+TARGET_PATH_PKG:=$(CARGO_HOME)/bin:$(TARGET_PATH_PKG)
+export CARGO_BUILD_TARGET:=$(RUSTC_TARGET_ARCH)
+export PYO3_CROSS_LIB_DIR:=$(STAGING_DIR)/usr/lib
+export RUSTFLAGS=-Clinker=$(TARGET_CC)
 
 define Package/python3-cryptography3x
   SECTION:=lang
@@ -31,13 +37,15 @@ define Package/python3-cryptography3x
   TITLE:=Cryptographic recipes and primitives
   URL:=https://github.com/pyca/cryptography
   DEPENDS:= \
+      +libc +libstdcpp \
       +libopenssl \
       +python3-light \
       +python3-email \
       +python3-openssl \
       +python3-urllib \
       +python3-cffi \
-      +python3-six
+      +python3-six \
+      +python3-setuptools-rust
 endef
 
 define Package/python3-cryptography3x/description
