@@ -1,0 +1,13 @@
+diff -Nur gerbera-2.0.0.org/src/server.cc gerbera-2.0.0/src/server.cc
+--- a/src/server.cc	2024-01-07 02:19:28.000000000 +0100
++++ b/src/server.cc	2024-02-06 19:38:59.212936476 +0100
+@@ -231,9 +231,6 @@
+         throw UpnpException(ret, fmt::format("run: UpnpSendAdvertisement {} failed", aliveAdvertisementInterval));
+     }
+ 
+-    if (config->getBoolOption(CFG_UPNP_LITERAL_HOST_REDIRECTION))
+-        UpnpSetAllowLiteralHostRedirection(1);
+-
+     UpnpSetHostValidateCallback(
+         [](auto host, auto cookie) -> int {
+             auto hostStr = std::string(host);
