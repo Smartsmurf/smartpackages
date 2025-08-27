@@ -36,14 +36,14 @@ define Package/openjdk/Default
 
 endef
 
-#
+#  +jamvm
 define Package/openjdk
   SUBMENU:=Java
   SECTION:=lang
   CATEGORY:=Languages
   TITLE:=OpenJDK 8
   URL:=http://openjdk.java.net/
-  DEPENDS:=+zlib +libfreetype +libcups +jamvm
+  DEPENDS:=+zlib +libfreetype +libcups
 endef
 
 

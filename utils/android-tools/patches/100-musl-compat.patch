@@ -1,0 +1,116 @@
+diff -Nur a/core/adbd/arpa_nameser.h b/core/adbd/arpa_nameser.h
+--- a/core/adbd/arpa_nameser.h	2020-08-12 04:06:52.000000000 +0200
++++ b/core/adbd/arpa_nameser.h	2024-11-24 23:38:29.425113023 +0100
+@@ -58,7 +58,7 @@
+ #define BIND_4_COMPAT
+ 
+ #include <sys/types.h>
+-#include <sys/cdefs.h>
++#include <cdefs.h>
+ 
+ /*
+  * Revision information.  This is the release date in YYYYMMDD format.
+diff -Nur a/core/adbd/base64.c b/core/adbd/base64.c
+--- a/core/adbd/base64.c	2020-08-12 04:06:52.000000000 +0200
++++ b/core/adbd/base64.c	2024-11-24 23:38:39.620168774 +0100
+@@ -42,7 +42,7 @@
+  * IF IBM IS APPRISED OF THE POSSIBILITY OF SUCH DAMAGES.
+  */
+ 
+-#include <sys/cdefs.h>
++#include <cdefs.h>
+ #if defined(LIBC_SCCS) && !defined(lint)
+ __RCSID("$NetBSD: base64.c,v 1.8 2002/11/11 01:15:17 thorpej Exp $");
+ #endif /* LIBC_SCCS and not lint */
+diff -Nur a/core/adbd/qemu_pipe.h b/core/adbd/qemu_pipe.h
+--- a/core/adbd/qemu_pipe.h	2020-08-12 04:06:52.000000000 +0200
++++ b/core/adbd/qemu_pipe.h	2024-11-24 23:38:53.173242725 +0100
+@@ -16,7 +16,7 @@
+ #ifndef ANDROID_INCLUDE_HARDWARE_QEMU_PIPE_H
+ #define ANDROID_INCLUDE_HARDWARE_QEMU_PIPE_H
+ 
+-#include <sys/cdefs.h>
++#include <cdefs.h>
+ #include <unistd.h>
+ #include <fcntl.h>
+ #include <sys/mman.h>
+diff -Nur a/core/adbd/services.c b/core/adbd/services.c
+--- a/core/adbd/services.c	2020-08-12 04:06:52.000000000 +0200
++++ b/core/adbd/services.c	2024-11-24 23:38:57.819268033 +0100
+@@ -20,7 +20,7 @@
+ #include <string.h>
+ #include <errno.h>
+ #include <pwd.h>
+-#include <sys/cdefs.h>
++#include <cdefs.h>
+ 
+ #include "sysdeps.h"
+ 
+diff -Nur a/core/include/cdefs.h b/core/include/cdefs.h
+--- a/core/include/cdefs.h	1970-01-01 01:00:00.000000000 +0100
++++ b/core/include/cdefs.h	2024-11-24 23:34:52.000000000 +0100
+@@ -0,0 +1,40 @@
++/* Copyright (C) 2016 Yann E. MORI <yann.morin.1998@free.fr>
++ *
++ * This file is in the Public Domain.
++ *
++ * For jurisdictions in which the Public Domain does not exist
++ * or it is not otherwise applicable, this file is licensed CC0
++ * (Creative Commons Zero).
++ */
++
++/* This file contains definitions for non-standard macros defined by
++ * glibc, but quite commonly used in packages.
++ *
++ * Because they are non-standard, musl does not define those macros.
++ * It does not provide cdefs.h either.
++ *
++ * This file is a compatibility header written from scratch, to be
++ * installed when the C library is musl.
++ *
++ * Not all macros from the glibc's cdefs.h are available, only the
++ * most commonly used ones.
++ *
++ * Please refer to the glibc documentation and source code for
++ * explanations about those macros.
++ */
++
++#ifndef BUILDROOT_SYS_CDEFS_H
++#define BUILDROOT_SYS_CDEFS_H
++
++#undef __P
++#define __P(arg) arg
++
++#ifdef __cplusplus
++#define __BEGIN_DECLS extern "C" {
++#define __END_DECLS   }
++#else
++#define __BEGIN_DECLS
++#define __END_DECLS
++#endif
++
++#endif /* ifndef BUILDROOT_SYS_CDEFS_H */
+diff -Nur a/core/include/cutils/bitops.h b/core/include/cutils/bitops.h
+--- a/core/include/cutils/bitops.h	2020-08-12 04:06:52.000000000 +0200
++++ b/core/include/cutils/bitops.h	2024-11-24 23:38:44.936197803 +0100
+@@ -17,7 +17,7 @@
+ #ifndef __CUTILS_BITOPS_H
+ #define __CUTILS_BITOPS_H
+ 
+-#include <sys/cdefs.h>
++#include <cdefs.h>
+ 
+ __BEGIN_DECLS
+ 
+diff -Nur a/core/libcutils/android_reboot.c b/core/libcutils/android_reboot.c
+--- a/core/libcutils/android_reboot.c	2020-08-12 04:06:52.000000000 +0200
++++ b/core/libcutils/android_reboot.c	2024-11-24 23:38:18.798054794 +0100
+@@ -23,7 +23,7 @@
+ #include <string.h>
+ #include <linux/reboot.h>
+ #include <sys/syscall.h>
+-#include <sys/cdefs.h>
++#include <cdefs.h>
+ 
+ #include <cutils/android_reboot.h>
+ 

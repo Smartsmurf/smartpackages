@@ -1,0 +1,223 @@
+#!/bin/sh /etc/rc.common
+
+START=30
+STOP=40
+
+USE_PROCD=1
+CONFIGFS=/sys/kernel/config/configfs
+GADGET_FS=/sys/kernel/config/usb_gadget
+ADBD_INIT=/etc/init.d/adbd
+
+log() {
+	logger -t usbgadget "$@"
+}
+
+set_gadget_params() {
+    local section="$1"
+    local name
+    local type
+    local enabled
+	local idProduct
+
+    config_get name "$section" name
+    config_get type "$section" type
+    config_get enabled "$section" enabled
+    config_get idProduct "$section" idProduct
+
+    if [ "$name" != "$current_preset" ]; then
+		return
+	fi
+	
+	if [ "$enabled" != "1" ]; then
+		return
+	fi
+
+	echo $idProduct > idProduct
+	case $type in
+		rndis)
+			log "handling rndis"
+			mkdir -p functions/rndis.usb0
+			# local MAC address
+			# echo "42:63:65:13:34:56" > functions/rndis.usb0/host_addr
+			# echo "42:63:65:66:43:21" > functions/rndis.usb0/dev_addr		
+
+			# add OS specific device descriptors to force Windows to load RNDIS drivers
+			# =============================================================================
+			# Witout this additional descriptors, most Windows system detect the RNDIS interface as "Serial COM port"
+			# To prevent this, the Microsoft specific OS descriptors are added in here
+			# !! Important:
+			#	If the device already has been connected to the Windows System without providing the
+			#	OS descriptor, Windows never asks again for them and thus never installs the RNDIS driver
+			#	This behavior is driven by creation of an registry hive, the first time a device without 
+			#	OS descriptors is attached. The key is build like this:
+			#
+			#	HKLM\SYSTEM\CurrentControlSet\Control\usbflags\[USB_VID+USB_PID+bcdRelease\osvc
+			#
+			#	To allow Windows to read the OS descriptors again, the according registry hive has to be
+			#	deleted manually or USB descriptor values have to be cahnged (f.e. USB_PID).
+			mkdir -p os_desc
+			echo 1 > os_desc/use
+			echo 0xbc > os_desc/b_vendor_code
+			echo MSFT100 > os_desc/qw_sign
+
+			mkdir -p functions/rndis.usb0/os_desc/interface.rndis
+			echo RNDIS > functions/rndis.usb0/os_desc/interface.rndis/compatible_id
+			echo 5162001 > functions/rndis.usb0/os_desc/interface.rndis/sub_compatible_id
+			;;
+		adb)
+			log "handling adb"
+			mkdir -p functions/ffs.adb
+			mkdir -p configs/c.1
+			mkdir -p configs/c.1/strings/0x409
+			echo "ffs" > configs/c.1/strings/0x409/configuration
+#			echo 0xc0 > configs/c.1/bmAttributes
+#			echo 500 > configs/c.1/MaxPower
+#			ln -s functions/ffs.adb/ configs/c.1/ffs.adb
+			mkdir /dev/usb-ffs
+			mkdir /dev/usb-ffs/adb
+			mount -t functionfs adb /dev/usb-ffs/adb/
+			;;
+		mass)
+			log "handling mass storage"
+			echo $idProduct > idProduct
+			mkdir -p functions/mass_storage.usb0
+			echo 1 > functions/mass_storage.usb0/stall # allow bulk EPs
+			echo 0 > functions/mass_storage.usb0/lun.0/cdrom # don't emulate CD-ROm
+			echo 0 > functions/mass_storage.usb0/lun.0/ro # write acces
+			# enable Force Unit Access (FUA) to make Windows write synchronously
+			# this is slow, but unplugging the stick without unmounting works
+			echo 0 > functions/mass_storage.usb0/lun.0/nofua 
+		    config_get mass_path "$section" mass_path
+			echo $mass_path > functions/mass_storage.usb0/lun.0/file
+			;;
+		*)
+			log "unhandled gadget type $type"
+			;;
+	esac
+}
+
+set_gadget_function() {
+    local section="$1"
+    local name
+    local type
+    local enabled
+
+    config_get name "$section" name
+    config_get type "$section" type
+    config_get enabled "$section" enabled
+
+    if [ "$name" != "$current_preset" ]; then
+		return
+	fi
+	
+	if [ "$enabled" != "1" ]; then
+		return
+	fi
+
+	case $type in
+		rndis)
+			log "set rndis function"
+			ln -s functions/rndis.usb0 configs/c.1/ # RNDIS on config 1 # RNDIS has to be the first interface on Composite device
+			ln -s configs/c.1/ os_desc # add config 1 to OS descriptors
+			;;
+		adb)
+			log "set adb function"
+			sleep 2
+			cd / && /usr/bin/adbd -D > /tmp/adbd.log &
+			sleep 2
+			log "linking function fs"
+			ln -s functions/ffs.adb configs/c.1/
+			;;
+		mass)
+			log "set mass function"
+			ln -s functions/mass_storage.usb0 configs/c.1/
+			;;
+		*)
+			log "unhandled gadget type $type"
+			;;
+	esac
+}
+
+handle_preset() {
+    local section="$1"
+    local name
+    local enabled
+    local idVendor
+    local idProduct
+
+    config_get name "$section" name
+    config_get enabled "$section" enabled
+    config_get idVendor "$section" idVendor
+    config_get idProduct "$section" idProduct
+    config_get serialnumber "$section" serialnumber
+    config_get manufacturer "$section" manufacturer
+    config_get product "$section" product
+
+    if [ "$enabled" != "1" ]; then
+        return
+    fi
+
+    echo "Preset: $name"
+    echo "  ID Vendor: $idVendor"
+    echo "  ID Product: $idProduct"
+
+	if [ ! -d $CONFIGFS ]; then
+		mount -t configfs none /sys/kernel/config
+	fi
+
+	current_preset="$name"
+	local gadget_path="$GADGET_FS/$current_preset"
+	mkdir -p $gadget_path
+	cd $gadget_path || { log "unable to change to $gadget_path)"; }
+
+	echo $idVendor > idVendor
+	echo $idProduct > idProduct
+	echo 0x0100 > bcdDevice
+	echo 0x0200 > bcdUSB
+	echo 0xEF > bDeviceClass
+	echo 0x02 > bDeviceSubClass
+	echo 0x01 > bDeviceProtocol
+	mkdir -p strings/0x409
+	echo $serialnumber > strings/0x409/serialnumber
+	echo $manufacturer > strings/0x409/manufacturer
+	echo $product > strings/0x409/product
+	mkdir -p configs/c.1/strings/0x409
+	echo "Config 1: RNDIS network" > configs/c.1/strings/0x409/configuration
+	echo 250 > configs/c.1/MaxPower
+	echo 0x80 > configs/c.1/bmAttributes #  USB_OTG_SRP | USB_OTG_HNP
+
+    config_foreach set_gadget_params usbgadget
+    config_foreach set_gadget_function usbgadget
+
+	ls /sys/class/udc/ | xargs echo > UDC
+}
+
+remove_preset() {
+    config_get name "$section" name
+	local gadget_path="$GADGET_FS/$name"
+	cd $gadget_path || { log "unable to change to $gadget_path)"; }
+	echo > UDC
+	find ${gadget_path}/configs -maxdepth 2 -type l -exec rm '{}' ';'
+	rmdir ${gadget_path}/configs/*/strings/*
+	rmdir ${gadget_path}/configs/*
+	rmdir ${gadget_path}/functions/*
+	rmdir ${gadget_path}/strings/*
+	rmdir $gadget_path	
+}
+
+start_service() {
+	log "Starting usbgadets..."
+	config_load usbgadget || { log "unable to load usbgadget"; }
+	config_foreach handle_preset preset
+}
+
+stop_service() {
+	log "Stopping usbgadgets..."
+	config_load usbgadget || { log "unable to load usbgadget"; }
+	config_foreach remove_preset preset
+}
+
+restart(){
+	  stop
+	  start
+}
